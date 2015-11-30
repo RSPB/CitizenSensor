@@ -98,7 +98,6 @@ def new():
             except UploadNotAllowed:
                 flash("The upload was not allowed")
             else:
-                flash("Post successful. Classification in progress...")
                 filepath = os.path.join(UPLOADED_PHOTOS_DEST, filename)
                 result = image_classifier.identify_image(filepath)
 
@@ -109,7 +108,7 @@ def new():
                 post.id = unique_id()
                 post.store()
 
-                flash("Classification done")
+                flash("Classification completed")
                 return to_index()
     return render_template('new.html')
 
