@@ -9,16 +9,28 @@
 
 <p class=byline>{{ post.published.strftime("%A, %B %d %Y at %I:%M:%S %p") }}</p>
 
+{% if post.location -%}
+    <p class=caption><strong>Location: </strong>{{ post.location }}</p>
+{% endif %}
+
+{% if post.semantic -%}
+    <p class=caption><strong>Semantic categories: </strong>{{ post.semantic }}</p>
+{% endif %}
+
+{% if post.scene -%}
+    <p class=caption><strong>Scene attributes:</strong> {{ post.scene }}</p>
+{% endif %}
+
 <p class=image>
     <a href="{{ post.imgsrc }}"><img src="{{ post.imgsrc }}"></a>
 </p>
 
 {% if post.caption -%}
-<p class=caption>{{ post.caption }}</p>
+    <p class=caption>{{ post.caption }}</p>
 {% endif %}
 
 {% else %}
-<p class=caption>No images yet.</p>
+    <p class=caption>No images yet.</p>
 {% endfor %}
 
 {% endblock body %}

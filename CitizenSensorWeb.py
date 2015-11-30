@@ -5,6 +5,7 @@ This is a simple example app for Flask-Uploads. It uses Flask-CouchDB as well,
 because I like CouchDB. It's a basic photolog app that lets you submit blog
 posts that are photos.
 """
+import os
 import datetime
 import uuid
 from flask import (Flask, request, url_for, redirect, render_template, flash,
@@ -13,6 +14,7 @@ from flaskext.couchdb import (CouchDBManager, Document, TextField,
                               DateTimeField, ViewField)
 from flaskext.uploads import (UploadSet, configure_uploads, IMAGES,
                               UploadNotAllowed)
+from ImageClassifier import ImageClassifier
 
 # defaults
 
@@ -39,6 +41,8 @@ configure_uploads(app, uploaded_photos)
 # documents
 db = CouchDBManager()
 
+image_classifier = ImageClassifier()
+
 def unique_id():
     return hex(uuid.uuid4().time)[2:-1]
 
@@ -47,6 +51,9 @@ class Post(Document):
     doc_type = 'post'
     title = TextField()
     filename = TextField()
+    location = TextField()
+    semantic = TextField()
+    scene = TextField()
     caption = TextField()
     published = DateTimeField(default=datetime.datetime.utcnow)
 
@@ -82,20 +89,27 @@ def index():
 def new():
     if request.method == 'POST':
         photo = request.files.get('photo')
-        title = request.form.get('title')
         caption = request.form.get('caption')
-        if not (photo and title and caption):
-            flash("You must fill in all the fields")
+        if not photo:
+            flash("Photo must be present")
         else:
             try:
                 filename = uploaded_photos.save(photo)
             except UploadNotAllowed:
                 flash("The upload was not allowed")
             else:
-                post = Post(title=filename, caption=caption, filename=filename)
+                flash("Post successful. Classification in progress...")
+                filepath = os.path.join(UPLOADED_PHOTOS_DEST, filename)
+                result = image_classifier.identify_image(filepath)
+
+                location = '' if not result['location'] else result['location']
+                semantic = ', '.join([r[0] for r in result['semantic_categories']])
+                scene = ', '.join([r[0] for r in result['scene_attributes']])
+                post = Post(title=filename, location=location, semantic=semantic, scene=scene, caption=caption, filename=filename)
                 post.id = unique_id()
                 post.store()
-                flash("Post successful. Classification in progress...")
+
+                flash("Classification done")
                 return to_index()
     return render_template('new.html')
 

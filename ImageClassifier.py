@@ -7,7 +7,7 @@ import numpy as np
 import caffe
 from gps import GPSLocator
 
-class Classifier(object):
+class ImageClassifier(object):
 
     def __init__(self):
         caffe.set_device(0)
@@ -70,9 +70,9 @@ class Classifier(object):
         return result
 
 
-if __name__ == '__main__':
-    classifier = Classifier()
-    image_filepath = '/home/tracek/Notebooks/data/27302080E.jpg'
-    result = classifier.identify_image(image_filepath)
-    print result
-
+# if __name__ == '__main__':
+#     classifier = ImageClassifier()
+#     image_filepath = '/home/tracek/Notebooks/data/27302080E.jpg'
+#     result = classifier.identify_image(image_filepath)
+#     print result
+#
