@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="b834a741-be41-43df-b453-874af042bf34" name="rspb" url="http://rspb.cloudapp.net">
+        <fileTransfer host="rspb.cloudapp.net" port="22" rootFolder="/home/tracek" accessType="SFTP" password="dffedfd8df99df9bdf9edf9bdf9fdf93" username="tracek">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
