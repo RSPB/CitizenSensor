@@ -95,7 +95,7 @@ def new():
                 post = Post(title=filename, caption=caption, filename=filename)
                 post.id = unique_id()
                 post.store()
-                flash("Post successful. Classification in progress... (will take some time)")
+                flash("Post successful. Classification in progress...")
                 return to_index()
     return render_template('new.html')
 
