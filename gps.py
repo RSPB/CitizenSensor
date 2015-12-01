@@ -55,7 +55,6 @@ class GPSLocator(object):
             result['location'] = 'Unknown'
             result['datum'] = 'Unknown'
             result['date'] = 'Unknown'
-            raise
 
         return result
 
