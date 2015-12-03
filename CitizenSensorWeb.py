@@ -10,28 +10,14 @@ import datetime
 import uuid
 from flask import (Flask, request, url_for, redirect, render_template, flash,
                    session, g)
-from flaskext.couchdb import (CouchDBManager, Document, TextField,
-                              DateTimeField, ViewField)
-from flaskext.uploads import (UploadSet, configure_uploads, IMAGES,
-                              UploadNotAllowed)
+from flaskext.couchdb import (CouchDBManager, Document, TextField, DateTimeField, ViewField)
+from flaskext.uploads import (UploadSet, configure_uploads, IMAGES, UploadNotAllowed)
+from config import DevConfig, ProdConfig
 from ImageClassifier import ImageClassifier
-
-# defaults
-
-DEBUG = False
-SECRET_KEY = 'barzo trudny tekscik'
-
-UPLOADED_PHOTOS_DEST = '/tmp/photolog'
-
-ADMIN_USERNAME = 'quark'
-ADMIN_PASSWORD = 'Charm1974'
-
-COUCHDB_SERVER = 'http://localhost:5984/'
-COUCHDB_DATABASE = 'flask-photolog'
 
 # application
 app = Flask(__name__)
-app.config.from_object(__name__)
+app.config.from_object(DevConfig)
 app.config.from_envvar('PHOTOLOG_SETTINGS', silent=True)
 
 # uploads
@@ -98,7 +84,7 @@ def new():
             except UploadNotAllowed:
                 flash("The upload was not allowed")
             else:
-                filepath = os.path.join(UPLOADED_PHOTOS_DEST, filename)
+                filepath = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], filename)
                 result = image_classifier.identify_image(filepath)
 
                 location = '' if not result['location'] else result['location']
@@ -142,4 +128,4 @@ def logout():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()

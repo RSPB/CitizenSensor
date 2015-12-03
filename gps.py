@@ -54,7 +54,7 @@ class GPSLocator(object):
             result['altitude'] = 'Unknown'
             result['location'] = 'Unknown'
             result['datum'] = 'Unknown'
-            result['date'] = 'Unknown'
+            result['date'] = tags['EXIF DateTimeOriginal'].values if 'EXIF DateTimeOriginal' in tags else 'Unknown'
 
         return result
 
