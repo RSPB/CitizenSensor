@@ -12,13 +12,14 @@ from flask import (Flask, request, url_for, redirect, render_template, flash,
                    session, g)
 from flaskext.couchdb import (CouchDBManager, Document, TextField, DateTimeField, ViewField)
 from flaskext.uploads import (UploadSet, configure_uploads, IMAGES, UploadNotAllowed)
+from werkzeug.security import check_password_hash
 from config import DevConfig, ProdConfig
 from ImageClassifier import ImageClassifier
+
 
 # application
 app = Flask(__name__)
 app.config.from_object(DevConfig)
-app.config.from_envvar('PHOTOLOG_SETTINGS', silent=True)
 
 # uploads
 uploaded_photos = UploadSet('photos', IMAGES)
@@ -107,8 +108,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        if (username == app.config['ADMIN_USERNAME'] and
-            password == app.config['ADMIN_PASSWORD']):
+        if check_password_hash(app.config['ADMIN_USERNAME'], username) and check_password_hash(app.config['ADMIN_PASSWORD'], password):
             session['logged_in'] = True
             flash("Successfully logged in")
             return to_index()
