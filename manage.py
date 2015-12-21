@@ -1,5 +1,5 @@
 from flask.ext.script import Manager, Server
-from CitizenSensorWeb import app, db, Post
+from citizensensor_web import app, db, Post
 
 manager = Manager(app)
 manager.add_command("server", Server())

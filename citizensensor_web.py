@@ -14,7 +14,7 @@ from flaskext.couchdb import (CouchDBManager, Document, TextField, DateTimeField
 from flaskext.uploads import (UploadSet, configure_uploads, IMAGES, UploadNotAllowed)
 from werkzeug.security import check_password_hash
 from config import DevConfig, ProdConfig
-from ImageClassifier import ImageClassifier
+from image_classifier import ImageClassifier
 
 
 # application
