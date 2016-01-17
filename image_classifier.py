@@ -8,20 +8,31 @@ import caffe
 from gps import GPSLocator
 
 class ImageClassifier(object):
+    """
+    Image classifier based on convolutional neural networks.
 
-    def __init__(self):
-        caffe.set_device(0)
-        caffe.set_mode_gpu()
-        caffe_root = '/home/tracek/Libraries/caffe/'
-        self.no_semantic_categories = 5
-        self.no_scene_attributes = 10
+    The image classifier uses model trained on MIT Places Database and is based on:
+    "Learning Deep Features for Scene Recognition using Places Database" B. Zhou et al.
+    """
+
+    def __init__(self, config):
+        """
+        :param config: configuration file ini-style
+        """
+        if config['Algorithm']['use_gpu']:
+            caffe.set_device(0)
+            caffe.set_mode_gpu()
+        else:
+            caffe.set_mode_cpu()
+        self.no_semantic_categories = config['Algorithm']['scene_attributes_no']
+        self.no_scene_attributes = config['Algorithm']['semantic_categories_no']
         self.locator = GPSLocator()
 
-        model_filepath = caffe_root + 'models/places205CNN/places205CNN_deploy_upgraded.prototxt'
-        pretrained_filepath = caffe_root + 'models/places205CNN/places205CNN_iter_300000_upgraded.caffemodel'
-        scene_attribute_model_filepath = caffe_root + 'models/places205CNN/sceneAttributeModel205.mat'
-        meanim_filepath = caffe_root + 'models/places205CNN/places205CNN_mean.binaryproto'
-        labels_filename = caffe_root + 'models/places205CNN/categoryIndex_places205.csv'
+        model_filepath = config['Model_filepaths']['network_definition']
+        pretrained_filepath = config['Model_filepaths']['caffe_model']
+        scene_attribute_model_filepath = config['Model_filepaths']['scene_attribute_model']
+        meanim_filepath = config['Model_filepaths']['meanimage_model']
+        labels_filename = config['Model_filepaths']['labels_model']
 
         mean = self.get_mean_image(meanim_filepath)
         scene_attribute_model = scipy.io.loadmat(scene_attribute_model_filepath)
@@ -70,9 +81,24 @@ class ImageClassifier(object):
         return result
 
 
-# if __name__ == '__main__':
-#     classifier = ImageClassifier()
-#     image_filepath = '/home/tracek/Notebooks/data/27302080E.jpg'
-#     result = classifier.identify_image(image_filepath)
-#     print result
-#
+def _check_file_exist(path):
+    if not os.path.isfile(path):
+        raise argparse.ArgumentTypeError('{0} does not exist'.format(path))
+    return path
+
+if __name__ == '__main__':
+    import argparse
+    from configobj import ConfigObj
+    from validate import Validator
+
+    parser = argparse.ArgumentParser(description='Image classifier.', prog='Citizen Sensor')
+    parser.add_argument('-i', '--image', help='Path to an image', type=_check_file_exist, required=True)
+    parser.add_argument('-c', '--config', help='Path to ini config file',
+                        default=os.path.join(os.environ['HOME'], '.citizen-sensor', 'config.ini'), type=_check_file_exist)
+    args = parser.parse_args()
+
+    config = ConfigObj(args.config, )
+    classifier = ImageClassifier(config)
+    result = classifier.identify_image(args.image)
+    print result
+
