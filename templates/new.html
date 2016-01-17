@@ -22,4 +22,14 @@
 
 </form>
 
+<form action="{{ url_for('new_url') }}" method=POST>
+<dl>
+<dt>New image url
+<dt><input type=text name='url' size=40 \>
+<p><input type=Submit value='Get file from Url'>
+</p>
+
+</dl>
+</form>
+
 {% endblock body %}

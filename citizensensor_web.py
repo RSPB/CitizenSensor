@@ -8,6 +8,7 @@ posts that are photos.
 import os
 import datetime
 import uuid
+import urllib
 from flask import (Flask, request, url_for, redirect, render_template, flash,
                    session, g)
 from flaskext.couchdb import (CouchDBManager, Document, TextField, DateTimeField, ViewField)
@@ -71,33 +72,48 @@ def login_handle():
 def index():
     posts = Post.all()
     return render_template('index.html', posts=posts)
-
-@app.route('/new', methods=['GET', 'POST'])
+@app.route('/new', methods=['POST'])
 def new():
-    if request.method == 'POST':
-        photo = request.files.get('photo')
-        caption = request.form.get('caption')
-        if not photo:
-            flash("Photo must be present")
+    photo = request.files.get('photo')
+    caption = request.form.get('caption')
+    if not photo:
+        flash("Photo must be present")
+    else:
+        try:
+            filename = uploaded_photos.save(photo)
+        except UploadNotAllowed:
+            flash("The upload was not allowed")
         else:
-            try:
-                filename = uploaded_photos.save(photo)
-            except UploadNotAllowed:
-                flash("The upload was not allowed")
-            else:
-                filepath = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], filename)
-                result = image_classifier.identify_image(filepath)
+            filepath = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], filename)
+            result = image_classifier.identify_image(filepath)
 
-                location = '' if not result['location'] else result['location']
-                semantic = ', '.join([r[0] for r in result['semantic_categories']])
-                scene = ', '.join([r[0] for r in result['scene_attributes']])
-                post = Post(title=filename, location=location, semantic=semantic, scene=scene, caption=caption, filename=filename)
-                post.id = unique_id()
-                post.store()
+            location = '' if not result['location'] else result['location']
+            semantic = ', '.join([r[0] for r in result['semantic_categories']])
+            scene = ', '.join([r[0] for r in result['scene_attributes']])
+            post = Post(title=filename, location=location, semantic=semantic, scene=scene, caption=caption, filename=filename)
+            post.id = unique_id()
+            post.store()
 
-                flash("Classification completed")
-                return to_index()
+            flash("Classification completed")
+            return to_index()
     return render_template('new.html')
+
+
+@app.route('/new_url', methods=['POST'])
+def newUrl():
+    url = request.form.get('url')
+    file_name = url.split('/')[-1]
+    filepath = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], file_name)
+    urllib.urlretrieve (url, file_name)  #add error handling for invalid urls, and some handling for identical filenames
+    result = image_classifier.identify_image(filepath)
+    location = '' if not result['location'] else result['location']
+    semantic = ', '.join([r[0] for r in result['semantic_categories']])
+    scene = ', '.join([r[0] for r in result['scene_attributes']])
+    post = Post(title=filename, location=location, semantic=semantic, scene=scene, caption=caption, filename=filename)
+    post.id = unique_id()
+    post.store()
+    flash("Classification completed")
+    return to_index()
 
 
 @app.route('/login', methods=['GET', 'POST'])
