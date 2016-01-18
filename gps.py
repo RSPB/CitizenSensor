@@ -8,7 +8,7 @@ from geopy.geocoders import Nominatim
 
 geolocator = Nominatim()
 
-def _convert_to_deg(self, value):
+def _convert_to_deg(value):
     degrees = value[0].num / value[0].den
     minutes = value[1].num / value[1].den
     seconds = value[2].num / value[2].den
@@ -59,6 +59,7 @@ if __name__ == '__main__':
     import configure
 
     parser = argparse.ArgumentParser(description='GPS data parser', prog='Citizen Sensor')
-    parser.add_argument('-i', '--image', help='Path to an image', type=configure.check_file_exist, required=True)
-    metadata = get_gps_metadata('/home/tracek/Notebooks/data/27302080E.jpg')
+    parser.add_argument('-i', '--image', help='Path to an image', type=configure.check_file_exist_argparse, required=True)
+    args = parser.parse_args()
+    metadata = get_gps_metadata(args.image, reverse_location=True)
     print metadata
