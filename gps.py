@@ -1,56 +1,64 @@
 #!/usr/bin/env python
 
 from __future__ import division
-import exifread
+import piexif
 from datetime import datetime
 from geopy.geocoders import Nominatim
 
 
 geolocator = Nominatim()
 
-def _convert_to_deg(value):
-    degrees = value[0].num / value[0].den
-    minutes = value[1].num / value[1].den
-    seconds = value[2].num / value[2].den
-    return degrees + minutes / 60.0 + seconds / 3600.0
+def _convert_to_deg(deg, min, sec):
+    degrees = _rational_to_real(*deg)
+    minutes = _rational_to_real(*min)
+    seconds = _rational_to_real(*sec)
+    return degrees + minutes / 60 + seconds / 3600
+
+def _rational_to_real(numerator, denominator):
+    return numerator / denominator
+
+def dms_to_decimal_deg(gps_exif):
+    latitude = gps_exif.get(piexif.GPSIFD.GPSLatitude)
+    if latitude:
+        latitude = _convert_to_deg(*latitude)
+        if gps_exif[piexif.GPSIFD.GPSLatitudeRef] == 'S':
+            latitude *= -1
+    else:
+        return None
+
+    longitude = gps_exif.get(piexif.GPSIFD.GPSLongitude)
+    if longitude:
+        longitude = _convert_to_deg(*longitude)
+        if gps_exif[piexif.GPSIFD.GPSLongitudeRef] == 'S':
+            longitude *= -1
+    else:
+        return None
+
+    return (latitude, longitude)
 
 
 def get_gps_metadata(filepath, reverse_location=False):
     result = {}
 
-    try:
-        f = open(filepath, 'rb')
-        tags = exifread.process_file(f)
-        GPSDate = tags['GPS GPSDate'].values
-        date = datetime.strptime(GPSDate, '%Y:%m:%d')
+    default = 'Unknown'
+    exif_dict = piexif.load(filepath)
 
-        GPSAltitude = tags['GPS GPSAltitude'].values
-        altitude = eval(str(GPSAltitude[0]))
+    if exif_dict['Exif']:
+        date = exif_dict['Exif'].get(piexif.ExifIFD.DateTimeOriginal)
+        result['date'] = str(datetime.strptime(date, '%Y:%m:%d %H:%M:%S').date()) if date else default
 
-        GPSLatitude = tags['GPS GPSLatitude'].values
-        GPSLatitudeRef = tags['GPS GPSLatitudeRef'].values
-        latitude = _convert_to_deg(GPSLatitude) if GPSLatitudeRef == 'N' else -_convert_to_deg(GPSLatitude)
+    if exif_dict['GPS']:
+        altitude = exif_dict['GPS'].get(piexif.GPSIFD.GPSAltitude)
+        result['altitude'] = int(_rational_to_real(*altitude)) if altitude else default
 
-        GPSLongitude = tags['GPS GPSLongitude'].values
-        GPSLongitudeRef = tags['GPS GPSLongitudeRef'].values
-        longitude = _convert_to_deg(GPSLongitude) if GPSLongitudeRef == 'E' else -_convert_to_deg(GPSLongitude)
+        datum = exif_dict['GPS'].get(piexif.GPSIFD.GPSMapDatum)
+        result['datum'] = datum or default
 
-        GPSMapDatum = tags['GPS GPSMapDatum'].values
+        position = dms_to_decimal_deg(exif_dict['GPS'])
+        result['position'] = position or default
 
-        result['coordinates'] = (latitude, longitude)
-        result['altitude'] = altitude
-        result['location'] = geolocator.reverse((latitude, longitude)).address if reverse_location else ''
-        result['datum'] = GPSMapDatum
-        result['date'] = str(date.date())
-    except:
-        result['coordinates'] = 'Unknown'
-        result['altitude'] = 'Unknown'
-        result['location'] = 'Unknown'
-        result['datum'] = 'Unknown'
-        try:
-            result['date'] = tags['EXIF DateTimeOriginal'].values if 'EXIF DateTimeOriginal' in tags else 'Unknown'
-        except:
-            result['date'] = 'Unknown'
+        if reverse_location and position:
+            result['location'] = geolocator.reverse(position).address
 
     return result
 
