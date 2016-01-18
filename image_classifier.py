@@ -81,11 +81,6 @@ class ImageClassifier(object):
         return result
 
 
-def _check_file_exist(path):
-    if not os.path.isfile(path):
-        raise argparse.ArgumentTypeError('{0} does not exist'.format(path))
-    return path
-
 if __name__ == '__main__':
     import argparse
     import configure
@@ -99,5 +94,5 @@ if __name__ == '__main__':
 
     classifier = ImageClassifier(config)
     result = classifier.identify_image(args.image)
-    print result
+    print(result)
 
