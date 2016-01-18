@@ -29,12 +29,12 @@ class TestConfigure(TestCase):
 
     def test_check_file_exists_throws_exception_on_missing_file(self):
         with assert_raises(ValidateError) as cm:
-            configure.check_file_exist('dummy')
+            configure.check_file_exist_config('dummy')
 
     def test_check_file_exists(self):
         filename = 'test-file.tmp'
         f = open(filename, 'w')
-        assert_equals(filename, configure.check_file_exist(filename))
+        assert_equals(filename, configure.check_file_exist_config(filename))
         os.remove(filename)
 
     def test_config_read_success(self):
