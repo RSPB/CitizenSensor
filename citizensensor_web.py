@@ -1,21 +1,12 @@
-"""
-photolog.py
-===========
-This is a simple example app for Flask-Uploads. It uses Flask-CouchDB as well,
-because I like CouchDB. It's a basic photolog app that lets you submit blog
-posts that are photos.
-"""
-import os
 import datetime
+import os
 import uuid
-from flask import (Flask, request, url_for, redirect, render_template, flash,
-                   session, g)
+from flask import (Flask, request, url_for, redirect, render_template, flash, session, g)
 from flaskext.couchdb import (CouchDBManager, Document, TextField, DateTimeField, ViewField)
 from flaskext.uploads import (UploadSet, configure_uploads, IMAGES, UploadNotAllowed)
 from werkzeug.security import check_password_hash
-from webconfig import DevConfig, ProdConfig
 from image_classifier import ImageClassifier
-
+from webconfig import DevConfig
 
 # application
 app = Flask(__name__)
@@ -29,6 +20,7 @@ configure_uploads(app, uploaded_photos)
 db = CouchDBManager()
 
 image_classifier = ImageClassifier()
+
 
 def unique_id():
     return hex(uuid.uuid4().time)[2:-1]
@@ -58,19 +50,23 @@ class Post(Document):
 db.add_document(Post)
 db.setup(app)
 
+
 # utils
 def to_index():
     return redirect(url_for('index'))
 
+
 @app.before_request
 def login_handle():
     g.logged_in = bool(session.get('logged_in'))
+
 
 # views
 @app.route('/')
 def index():
     posts = Post.all()
     return render_template('index.html', posts=posts)
+
 
 @app.route('/new', methods=['GET', 'POST'])
 def new():
@@ -91,7 +87,8 @@ def new():
                 location = '' if not result['location'] else result['location']
                 semantic = ', '.join([r[0] for r in result['semantic_categories']])
                 scene = ', '.join([r[0] for r in result['scene_attributes']])
-                post = Post(title=filename, location=location, semantic=semantic, scene=scene, caption=caption, filename=filename)
+                post = Post(title=filename, location=location, semantic=semantic, scene=scene, caption=caption,
+                            filename=filename)
                 post.id = unique_id()
                 post.store()
 
@@ -108,7 +105,8 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        if check_password_hash(app.config['ADMIN_USERNAME'], username) and check_password_hash(app.config['ADMIN_PASSWORD'], password):
+        if check_password_hash(app.config['ADMIN_USERNAME'], username) and check_password_hash(
+                app.config['ADMIN_PASSWORD'], password):
             session['logged_in'] = True
             flash("Successfully logged in")
             return to_index()
