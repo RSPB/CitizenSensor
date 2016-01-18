@@ -88,16 +88,15 @@ def _check_file_exist(path):
 
 if __name__ == '__main__':
     import argparse
-    from configobj import ConfigObj
-    from validate import Validator
+    import configure
 
     parser = argparse.ArgumentParser(description='Image classifier.', prog='Citizen Sensor')
-    parser.add_argument('-i', '--image', help='Path to an image', type=_check_file_exist, required=True)
-    parser.add_argument('-c', '--config', help='Path to ini config file',
-                        default=os.path.join(os.environ['HOME'], '.citizen-sensor', 'config.ini'), type=_check_file_exist)
+    parser.add_argument('-i', '--image', help='Path to an image', type=configure.check_file_exist, required=True)
+    parser.add_argument('-c', '--config', help='Path to ini config file', type=configure.check_file_exist, default='config.ini')
     args = parser.parse_args()
 
-    config = ConfigObj(args.config, )
+    config = configure.read_config(args.config)
+
     classifier = ImageClassifier(config)
     result = classifier.identify_image(args.image)
     print result
