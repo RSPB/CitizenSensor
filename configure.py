@@ -12,7 +12,7 @@ def check_file_exist(path):
 
 def read_config(config_path='config.ini', configspec_path='configspec.ini'):
     config = ConfigObj(check_file_exist(config_path), configspec=check_file_exist(configspec_path))
-    validator = Validator({'filpath': check_file_exist})
+    validator = Validator({'filepath': check_file_exist})
     results = config.validate(validator, preserve_errors=True)
 
     if results != True:
