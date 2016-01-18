@@ -13,7 +13,7 @@ from flask import (Flask, request, url_for, redirect, render_template, flash,
 from flaskext.couchdb import (CouchDBManager, Document, TextField, DateTimeField, ViewField)
 from flaskext.uploads import (UploadSet, configure_uploads, IMAGES, UploadNotAllowed)
 from werkzeug.security import check_password_hash
-from config import DevConfig, ProdConfig
+from webconfig import DevConfig, ProdConfig
 from image_classifier import ImageClassifier
 
 
