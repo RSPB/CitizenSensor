@@ -8,19 +8,24 @@ from geopy.geocoders import Nominatim
 
 geolocator = Nominatim()
 
-def _convert_to_deg(deg, min, sec):
-    degrees = _rational_to_real(*deg)
-    minutes = _rational_to_real(*min)
-    seconds = _rational_to_real(*sec)
+def convert_to_deg(degrees, minutes, seconds):
+    if isinstance(degrees, tuple):
+        degrees = rational_to_real(*degrees)
+    if isinstance(minutes, tuple):
+        minutes = rational_to_real(*minutes)
+    if isinstance(seconds, tuple):
+        seconds = rational_to_real(*seconds)
     return degrees + minutes / 60 + seconds / 3600
 
-def _rational_to_real(numerator, denominator):
+def rational_to_real(numerator, denominator):
+    if denominator == 0:
+        return numerator
     return numerator / denominator
 
-def dms_to_decimal_deg(gps_exif):
+def exif_dms_to_decimal_deg(gps_exif):
     latitude = gps_exif.get(piexif.GPSIFD.GPSLatitude)
     if latitude:
-        latitude = _convert_to_deg(*latitude)
+        latitude = convert_to_deg(*latitude)
         if gps_exif[piexif.GPSIFD.GPSLatitudeRef] == 'S':
             latitude *= -1
     else:
@@ -28,7 +33,7 @@ def dms_to_decimal_deg(gps_exif):
 
     longitude = gps_exif.get(piexif.GPSIFD.GPSLongitude)
     if longitude:
-        longitude = _convert_to_deg(*longitude)
+        longitude = convert_to_deg(*longitude)
         if gps_exif[piexif.GPSIFD.GPSLongitudeRef] == 'S':
             longitude *= -1
     else:
@@ -49,12 +54,12 @@ def get_gps_metadata(filepath, reverse_location=False):
 
     if exif_dict['GPS']:
         altitude = exif_dict['GPS'].get(piexif.GPSIFD.GPSAltitude)
-        result['altitude'] = int(_rational_to_real(*altitude)) if altitude else default
+        result['altitude'] = int(rational_to_real(*altitude)) if altitude else default
 
         datum = exif_dict['GPS'].get(piexif.GPSIFD.GPSMapDatum)
         result['datum'] = datum or default
 
-        position = dms_to_decimal_deg(exif_dict['GPS'])
+        position = exif_dms_to_decimal_deg(exif_dict['GPS'])
         result['position'] = position or default
 
         if reverse_location and position:
