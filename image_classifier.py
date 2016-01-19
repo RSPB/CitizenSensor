@@ -5,7 +5,7 @@ import re
 import scipy.io
 import numpy as np
 import caffe
-from gps import GPSLocator
+import gps
 
 class ImageClassifier(object):
     """
@@ -26,7 +26,6 @@ class ImageClassifier(object):
             caffe.set_mode_cpu()
         self.no_semantic_categories = config['Algorithm']['scene_attributes_no']
         self.no_scene_attributes = config['Algorithm']['semantic_categories_no']
-        self.locator = GPSLocator()
 
         model_filepath = config['Model_filepaths']['network_definition']
         pretrained_filepath = config['Model_filepaths']['caffe_model']
@@ -74,7 +73,7 @@ class ImageClassifier(object):
         scene_attr_score = total_scene_score[top_scene_attr]
         scene_attr_complete = zip(scene_attr, scene_attr_score.tolist())
 
-        result = self.locator.get_gps_metadata(image_filepath)
+        result = gps.get_gps_metadata(image_filepath)
         result['semantic_categories'] = top_semantic_complete
         result['scene_attributes'] = scene_attr_complete
 
