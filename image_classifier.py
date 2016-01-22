@@ -85,8 +85,8 @@ if __name__ == '__main__':
     import configure
 
     parser = argparse.ArgumentParser(description='Image classifier.', prog='Citizen Sensor')
-    parser.add_argument('-i', '--image', help='Path to an image', type=configure.check_file_exist, required=True)
-    parser.add_argument('-c', '--config', help='Path to ini config file', type=configure.check_file_exist, default='config.ini')
+    parser.add_argument('-i', '--image', help='Path to an image', type=configure.check_file_exist_argparse, required=True)
+    parser.add_argument('-c', '--config', help='Path to ini config file', type=configure.check_file_exist_argparse, default='config.ini')
     args = parser.parse_args()
 
     config = configure.read_config(args.config)
