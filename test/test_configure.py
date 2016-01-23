@@ -49,7 +49,9 @@ class TestConfigure(TestCase):
         self.assertRaises(ValidateError, configure.read_config, 'config-missing.ini', 'configspec.ini')
 
     def test_config_option_missing(self):
-        self.fail("implement me")
+        config = configure.read_config('test/config-test.ini', 'test/configspec-test.ini')
+        with self.assertRaises(KeyError):
+            val = config['This value is missing in config']
 
     def test_configspec_missing(self):
         self.assertRaises(ValidateError, configure.read_config, 'config-missing.ini', 'configspec.ini')
