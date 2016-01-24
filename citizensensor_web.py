@@ -20,7 +20,7 @@ configure_uploads(app, uploaded_photos)
 # documents
 db = CouchDBManager()
 
-image_classifier = ImageClassifier()
+image_classifier = ImageClassifier(app.config)
 
 
 def unique_id():
@@ -67,8 +67,18 @@ def login_handle():
 def index():
     posts = Post.all()
     return render_template('index.html', posts=posts)
-@app.route('/new', methods=['POST'])
 
+def addImageToRepository(filepath):
+    result = image_classifier.identify_image(filepath)
+    location = '' if not result['location'] else result['location']
+    semantic = ', '.join([r[0] for r in result['semantic_categories']])
+    scene = ', '.join([r[0] for r in result['scene_attributes']])
+    post = Post(title=filename, location=location, semantic=semantic, scene=scene, caption=caption, filename=filename)
+    post.id = unique_id()
+    post.store()
+    flash("Classification completed")
+
+@app.route('/new', methods=['POST'])
 def new():
     photo = request.files.get('photo')
     caption = request.form.get('caption')
@@ -81,17 +91,7 @@ def new():
             flash("The upload was not allowed")
         else:
             filepath = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], filename)
-            result = image_classifier.identify_image(filepath)
-
-            location = '' if not result['location'] else result['location']
-            semantic = ', '.join([r[0] for r in result['semantic_categories']])
-            scene = ', '.join([r[0] for r in result['scene_attributes']])
-            post = Post(title=filename, location=location, semantic=semantic, scene=scene, caption=caption,
-                            filename=filename)
-            post.id = unique_id()
-            post.store()
-
-            flash("Classification completed")
+            addImageToRepository(filepath)
             return to_index()
     return render_template('new.html')
 
@@ -102,15 +102,12 @@ def newUrl():
     file_name = url.split('/')[-1]
     filepath = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], file_name)
     urllib.urlretrieve (url, file_name)  #add error handling for invalid urls, and some handling for identical filenames
-    result = image_classifier.identify_image(filepath)
-    location = '' if not result['location'] else result['location']
-    semantic = ', '.join([r[0] for r in result['semantic_categories']])
-    scene = ', '.join([r[0] for r in result['scene_attributes']])
-    post = Post(title=filename, location=location, semantic=semantic, scene=scene, caption=caption, filename=filename)
-    post.id = unique_id()
-    post.store()
-    flash("Classification completed")
+    addImageToRepository(filepath)
     return to_index()
+
+
+
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
