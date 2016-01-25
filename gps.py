@@ -45,25 +45,31 @@ def exif_dms_to_decimal_deg(gps_exif):
 def get_gps_metadata(filepath, reverse_location=False):
     result = {}
 
-    default = 'Unknown'
+    default_for_missing_values = 'Unknown'
     exif_dict = piexif.load(filepath)
 
     if exif_dict['Exif']:
         date = exif_dict['Exif'].get(piexif.ExifIFD.DateTimeOriginal)
-        result['date'] = str(datetime.strptime(date, '%Y:%m:%d %H:%M:%S').date()) if date else default
+        try:
+            result['date'] = str(datetime.strptime(date, '%Y:%m:%d %H:%M:%S').date()) if date else default_for_missing_values
+        except:
+            result['date'] = default_for_missing_values
 
     if exif_dict['GPS']:
         altitude = exif_dict['GPS'].get(piexif.GPSIFD.GPSAltitude)
-        result['altitude'] = int(rational_to_real(*altitude)) if altitude else default
+        result['altitude'] = int(rational_to_real(*altitude)) if altitude else default_for_missing_values
 
         datum = exif_dict['GPS'].get(piexif.GPSIFD.GPSMapDatum)
-        result['datum'] = datum or default
+        result['datum'] = datum or default_for_missing_values
 
         position = exif_dms_to_decimal_deg(exif_dict['GPS'])
-        result['position'] = position or default
+        result['position'] = position or default_for_missing_values
 
         if reverse_location and position:
-            result['location'] = geolocator.reverse(position).address
+            try:
+                result['location'] = geolocator.reverse(position).address
+            except Exception:
+                result['location'] = default_for_missing_values
 
     return result
 

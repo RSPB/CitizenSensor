@@ -11,8 +11,11 @@ image_filepath2 = 'test/27742078S.jpg'
 
 config = configure.read_config()
 
-def normalize(array):
-    return (array - min(array)) / (max(array) - min(array))
+def normalise(array, cut_decimal_digits=None):
+    normalised = (array - np.min(array)) / (np.max(array) - np.min(array))
+    if cut_decimal_digits:
+        normalised = np.round(normalised, cut_decimal_digits)
+    return normalised
 
 def get_mean_image(path):
     proto_obj = caffe.io.caffe_pb2.BlobProto()
@@ -44,32 +47,27 @@ attributes = scene_attribute_model['attributes']
 net = caffe.Classifier(model_filepath, pretrained_filepath, mean=mean, channel_swap = (2, 1, 0),raw_scale = 255)
 labels = np.loadtxt(labels_filename, str, delimiter='\t')
 
-print 'Start!'
-import time
-start = time.time()
-for i in range(10):
-    filename = os.path.splitext(os.path.basename(image_filepath))[0]
-    input_image = caffe.io.load_image(image_filepath)
-    prediction = net.predict([input_image])
+filename = os.path.splitext(os.path.basename(image_filepath))[0]
+input_image = caffe.io.load_image(image_filepath)
+prediction = net.predict([input_image])
 
-    # sort top k predictions from softmax output
-    top_semantic = prediction[0].argsort()[-1:-no_semantic_categories-1:-1]
-    top_semantic_labels = [re.match('([^\s]+)', label).group(1) for label in labels[top_semantic]]
-    top_semantic_score = prediction[0][top_semantic]
-    top_semantic_complete = zip(top_semantic_labels, top_semantic_score.tolist())
+# sort top k predictions from softmax output
+top_semantic = prediction[0].argsort()[-1:-no_semantic_categories-1:-1]
+top_semantic_labels = [unicode(re.match('([^\s]+)', label).group(1)) for label in labels[top_semantic]]
+top_semantic_score = np.round(prediction[0][top_semantic], 3)
+top_semantic_complete = zip(top_semantic_labels, top_semantic_score.tolist())
 
-    fc7 = net.blobs['fc7'].data
-    res = W.dot(fc7.T)
+fc7 = net.blobs['fc7'].data
+res = W.dot(fc7.T)
 
-    total_scene_score = normalize(res.sum(axis=1))
-    top_scene_attr = total_scene_score.argsort()[-1:-no_scene_attributes-1:-1]
-    scene_attr_labels = attributes[top_scene_attr]
-    scene_attr = [scene_attr_labels[idx][0][0] for idx in range(10)]
-    scene_attr_score = total_scene_score[top_scene_attr]
-    scene_attr_complete = zip(scene_attr, scene_attr_score.tolist())
+total_scene_score = normalise(res.sum(axis=1), 3)
+top_scene_attr = total_scene_score.argsort()[-1:-no_scene_attributes-1:-1]
+scene_attr_labels = attributes[top_scene_attr]
+scene_attr = [scene_attr_labels[idx][0][0] for idx in range(10)]
+scene_attr_score = total_scene_score[top_scene_attr]
+scene_attr_complete = zip(scene_attr, scene_attr_score.tolist())
 
-    result = gps.get_gps_metadata(image_filepath)
-    result['semantic_categories'] = top_semantic_complete
-    result['scene_attributes'] = scene_attr_complete
-
-print('Time: ', time.time() - start)
+result = gps.get_gps_metadata(image_filepath)
+result['semantic_categories'] = top_semantic_complete
+result['scene_attributes'] = scene_attr_complete
+print(result)
