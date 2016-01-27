@@ -13,7 +13,7 @@ class Test_GPS(TestCase):
         self.assertEquals(res, 8.4)
 
     def test_get_gps_metadata_no_location(self):
-        res = gps.get_gps_metadata('test/27302080E.jpg')
+        res = gps.get_gps_metadata('test/images/27302080E.jpg')
         self.assertEquals(len(res), 10)
         self.assertEquals(res['altitude'], 774)
         self.assertEquals(res['date'], '2012-05-18')
@@ -23,7 +23,7 @@ class Test_GPS(TestCase):
 
     @attr('slow')
     def test_get_gps_metadata_with_location(self):
-        res = gps.get_gps_metadata('test/27302080E.jpg', reverse_location=True)
+        res = gps.get_gps_metadata('test/images/27302080E.jpg', reverse_location=True)
         self.assertEquals(len(res), 11)
         self.assertEquals(res['location'], u'Vecchia Strada Comunale Zerfaliu-Paulilatino, Paulle/Paulilatino, OR, SAR, 09070, Italia',
                           "Translation of coordinates to location's name failed. Test is expected to fail if there is "

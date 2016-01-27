@@ -36,6 +36,6 @@ class TestImageClassifier(TestCase):
         config['Algorithm']['scene_attributes_no'] = 5
         config['GPS']['reverse_location'] = False
         classifier = ImageClassifier(config)
-        res = classifier.identify_image('test/27302080E.jpg')
+        res = classifier.identify_image('test/images/27302080E.jpg')
         self.maxDiff = None # print full diff on mismatch
         self.assertDictEqual(res, classification_27302080E)
