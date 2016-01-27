@@ -2,8 +2,25 @@
 
 from __future__ import division
 import piexif
+import struct
 from datetime import datetime
 from geopy.geocoders import Nominatim
+
+"""
+Grab these tags:
+
+SceneCaptureType
+SubjectDistance
+SubjectDistanceRange
+Orientation
+ExposureProgram
+SelfTimerMode
+ApertureValue
+LightSource
+Flash
+ShutterSpeedValue
+"""
+
 
 
 geolocator = Nominatim()
@@ -46,23 +63,51 @@ def get_gps_metadata(filepath, reverse_location=False):
     result = {}
 
     default_for_missing_values = 'Unknown'
-    exif_dict = piexif.load(filepath)
 
-    if exif_dict['Exif']:
-        date = exif_dict['Exif'].get(piexif.ExifIFD.DateTimeOriginal)
+    try:
+        exif_dict = piexif.load(filepath)
+    except ValueError as ex:
+        result['Unknown'] = str(ex).replace('\n', ' ')
+        return result
+    except struct.error as ex:
+        result['Unknown'] = 'Internal error.'
+        return result
+
+    exif = exif_dict.get('Exif')
+    if exif:
+        date = exif.get(piexif.ExifIFD.DateTimeOriginal)
         try:
             result['date'] = str(datetime.strptime(date, '%Y:%m:%d %H:%M:%S').date()) if date else default_for_missing_values
         except:
             result['date'] = default_for_missing_values
 
-    if exif_dict['GPS']:
-        altitude = exif_dict['GPS'].get(piexif.GPSIFD.GPSAltitude)
+        shutter = exif.get(piexif.ExifIFD.ShutterSpeedValue)
+        result['ShutterSpeedValue'] = rational_to_real(*shutter) if shutter else default_for_missing_values
+        scene_capture_type = exif.get(piexif.ExifIFD.SceneCaptureType)
+        result['SceneCaptureType'] = scene_capture_type or default_for_missing_values
+        subject_distance = exif.get(piexif.ExifIFD.SubjectDistance)
+        result['SubjectDistance'] = subject_distance or default_for_missing_values
+        subject_distance_range = exif.get(piexif.ExifIFD.SubjectDistanceRange)
+        result['SubjectDistanceRange'] = subject_distance_range or default_for_missing_values
+        aperture = exif.get(piexif.ExifIFD.ApertureValue)
+        result['ApertureValue'] = rational_to_real(*aperture) if aperture else default_for_missing_values
+        light_source = exif.get(piexif.ExifIFD.LightSource)
+        result['LightSource'] = light_source or default_for_missing_values
+
+    image_0th = exif_dict.get('oth')
+    if image_0th:
+        image_orientation = image_0th.get(piexif.ImageIFD.Orientation)
+        result['Orientation'] = image_orientation or default_for_missing_values
+
+    gps = exif_dict.get('GPS')
+    if gps:
+        altitude = gps.get(piexif.GPSIFD.GPSAltitude)
         result['altitude'] = int(rational_to_real(*altitude)) if altitude else default_for_missing_values
 
-        datum = exif_dict['GPS'].get(piexif.GPSIFD.GPSMapDatum)
+        datum = gps.get(piexif.GPSIFD.GPSMapDatum)
         result['datum'] = datum or default_for_missing_values
 
-        position = exif_dms_to_decimal_deg(exif_dict['GPS'])
+        position = exif_dms_to_decimal_deg(gps)
         result['position'] = position or default_for_missing_values
 
         if reverse_location and position:
