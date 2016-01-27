@@ -51,6 +51,7 @@ class BucketWrapper(object):
             self.count += 1
             self.files.append(key.name)
         self.loaded = True
+        return self
 
 
 class BucketInfo(object):
@@ -74,7 +75,6 @@ if __name__ == '__main__':
     parser.add_argument('-b', '--bucket', help='Bucket name on AWS S3', required=True)
     args = parser.parse_args()
 
-    bucket = BucketWrapper(args.bucket)
-    bucket.load()
+    bucket = BucketWrapper(args.bucket).load()
     info = bucket.get_bucket_info()
     print(info)
