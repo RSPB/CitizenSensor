@@ -61,6 +61,7 @@ class ImageClassifier(object):
         top_semantic_score = prediction[0][top_semantic]
         top_semantic_score_rounded = format_array_as_list(top_semantic_score, self.formatting_precision)
         top_semantic_complete = zip(top_semantic_labels, top_semantic_score_rounded)
+        print(top_semantic_score.tolist())
 
         fc7 = self.net.blobs['fc7'].data
         res = self.W.dot(fc7.T)
@@ -74,7 +75,6 @@ class ImageClassifier(object):
         scene_attr_complete = zip(scene_attr, scene_attr_score_rounded)
 
         result = gps.get_gps_metadata(image_filepath)
-        result['filename'] = filename
         result['semantic_categories'] = top_semantic_complete
         result['scene_attributes'] = scene_attr_complete
 

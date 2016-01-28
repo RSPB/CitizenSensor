@@ -35,6 +35,7 @@ def convert_to_deg(degrees, minutes, seconds):
         seconds = rational_to_real(*seconds)
     return degrees + minutes / 60 + seconds / 3600
 
+
 def rational_to_real(numerator, denominator=0):
     if denominator == 0:
         return numerator
@@ -61,8 +62,6 @@ def exif_dms_to_decimal_deg(gps_exif):
 
 def gpsToString(coordinate):
     return str(convert_to_deg((coordinate[0].num, coordinate[0].den), (coordinate[1].num, coordinate[1].den), (coordinate[2].num, coordinate[2].den)))
-
-
 
 def get_gps_metadata(filepath, reverse_location=False):
     result = {}
