@@ -42,7 +42,7 @@ h:	WETLANDS -	Wetlands are areas that fall between land and water. These are are
 
 **Places_semantic_attributes.csv**
 
-This file allocates a usefulness to each of the semantic attributes, and records the Level 1 LUCAS lndcovers with which that tag could be associated, as above. Almost all semantic attributes have potential usefulness, but a large proportion of them simply inform us that a photograph was tken indoors. For this reason, this file contains an additional column, 'why_useful' which allocates attributes to classes as follows:
+This file allocates a usefulness to each of the semantic attributes, and records the Level 1 LUCAS landcovers with which that tag could be associated, as above. Almost all semantic attributes have potential usefulness, but a large proportion of them simply inform us that a photograph was tken indoors. For this reason, this file contains an additional column, 'why_useful' which allocates attributes to classes as follows:
 
 - bi = built environment, indoors
 
