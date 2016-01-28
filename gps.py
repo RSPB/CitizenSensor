@@ -120,4 +120,4 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--image', help='Path to an image', type=configure.check_file_exist_argparse, required=True)
     args = parser.parse_args()
     metadata = get_gps_metadata(args.image, reverse_location=True)
-    print (metadata)
+    print metadata
