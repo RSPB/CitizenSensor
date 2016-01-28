@@ -1,0 +1,103 @@
+Label,Usefulness,LC
+sailing/boating,u,g
+driving,m,a&e&f
+biking,m,a&c&e&f
+transporting,m,a
+sunbathing,n,
+touring,n,
+hiking,u,c&d&e&f&h
+climbing,u,d&e&f
+camping,m,e&d&c&f
+reading,n,
+studying,n,
+training,n,
+research,n,
+diving,u,g
+swimming,u,g
+bathing,m,g
+eating,n,
+cleaning,n,
+socializing,m,a
+congregating,m,a
+waiting,n,
+competing,n,
+sports,m,a&e 
+exercise,m,a&e
+playing,m,a&e&c
+gaming,n,
+spectating,m,a&e
+farming,u,b&e
+constructing,u,a
+shopping,u,a
+medical,m,a
+working,n,
+using tools,n,
+digging,u,b&e&f
+business,m,a
+praying,n,
+fencing,u,b&e&a&f
+railing,u,a&b&e&f
+wire,u,a&b&e&f
+railroad,u,a
+trees,u,c&d 
+grass,u,e&b 
+vegetation,u,b&c&d&e&h
+shrubbery,u,d&c&f
+foliage,u,b&c&d 
+leaves,u,c&d&e&b
+flowers,u,e&d&a&b&f
+asphalt,u,a
+pavement,u,a
+shingles,m,a
+carpet,m,a
+brick,m,a
+tiles,m,a
+concrete,m,a
+metal,m,a
+paper,n,
+wood,m,a
+vinyl,m,a
+plastic,m,a
+cloth,m,a
+sand,u,f&g&h&d
+rocky,u,f
+dirt soil,u,f
+marble,m,a
+glass,m,a
+waves,u,g
+ocean,u,g
+running water,u,g
+still water,u,g
+ice,m,f
+snow,m,f
+clouds,n,
+smoke,m,f&c&d&a
+fire,m,f&c&d&a
+natural light,u,a&b&c&d&e&f&g&h
+sunny,u,a&b&c&d&e&f&g&h
+electric lighting,u,a
+aged,n,
+glossy,n,
+matte,n,
+sterile,m,a
+moist,u,b&c&d&e&g&h
+dry,u,a&f
+dirty,u,f&h
+rusty,m,a
+warm,m,f&a&b&c&d&e
+cold,m,a&b&c&d&e&f&g&h
+natural,u,c&d&e&f&g&h
+man-made,u,a
+open area,u,a&b&e&f&g&h
+semi-enclosed area,u,a&c 
+enclosed area,u,a
+far-away horizon,u,a&b&d&e&f&g&h
+nohorizon,u,a&b&c&d&e&f&g&h
+rugged,u,f&e
+vertical components,u,a&c 
+horizontal components,m,a&b
+symmetrical,m,a
+cluttered,n,
+scary,n,
+soothing,n,
+stressful,n,
