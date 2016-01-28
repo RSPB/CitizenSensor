@@ -69,26 +69,9 @@ def get_gps_metadata(filepath, reverse_location=False):
 
     default_for_missing_values = 'Unknown'
 
-#    try:
-#        exif_dict = piexif.load(filepath)
-#    except ValueError as ex:
-#        result['Unknown'] = str(ex).replace('\n', ' ')
-#        return result
-#    except struct.error as ex:
-#        print ex
-#        result['Unknown'] = 'Internal error.'
-#        return result
     file = open(filepath, 'rb')
     tags = exifread.process_file(file)
 
-#    for tag in tags.keys():
-#        if tag not in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
-#            print "Key: %s, value %s" % (tag, tags[tag])
-
-#    print 'tags'#    result['date'] = tags['date]
-
-
-#    exif = exif_dict.get('Exif')
     if tags:
         date = tags['Image DateTime']
         try:
