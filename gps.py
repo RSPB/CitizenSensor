@@ -60,7 +60,7 @@ def exif_dms_to_decimal_deg(gps_exif):
 def gpsToString(coordinate):
  #   sec = rational_to_real(*map(int, str(coordinate[2]).split("/", 2)))
 #    print coordinate[0].__class__
-    return convert_to_deg(tuple(coordinate[0]), tuple(coordinate[1]), tuple(coordinate[2]))
+    return str(convert_to_deg((coordinate[0].num, coordinate[0].den), (coordinate[1].num, coordinate[1].den), (coordinate[2].num, coordinate[2].den)))
 
 
 
@@ -118,10 +118,10 @@ def get_gps_metadata(filepath, reverse_location=False):
         datum = tags['GPS GPSMapDatum'] if 'GPS GPSMapDatum' in tags else default_for_missing_values
         result['datum'] = datum
 
-        # latitude = tags['GPS GPSLatitude'].values if 'GPS GPSLatitude' in tags else 0
-        # longtitude = tags['GPS GPSLongitude'].values if 'GPS GPSLongitude'  in tags else 0
-        # position =  gpsToString(latitude) + ", " + gpsToString(longtitude)
-        # result['position'] = position or default_for_missing_values
+        latitude = tags['GPS GPSLatitude'].values if 'GPS GPSLatitude' in tags else 0
+        longtitude = tags['GPS GPSLongitude'].values if 'GPS GPSLongitude'  in tags else 0
+        position =  gpsToString(latitude) + ", " + gpsToString(longtitude)
+        result['position'] = position 
 #
         # if reverse_location and position:
         #      try:
