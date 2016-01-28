@@ -50,9 +50,10 @@ class ImageClassifier(object):
         means = np.asarray(proto_obj.data)
         return means.reshape(3,256,256).mean(1).mean(1)
 
-    def identify_image(self, image_filepath):
-        filename = os.path.splitext(os.path.basename(image_filepath))[0]
-        input_image = caffe.io.load_image(image_filepath)
+    def identify_image(self, image):
+        result = {}
+        filename = image.name
+        input_image = caffe.io.load_image(image)
         prediction = self.net.predict([input_image])
 
         # sort top k predictions from softmax output
@@ -73,7 +74,7 @@ class ImageClassifier(object):
         scene_attr_score_rounded = format_array_as_list(scene_attr_score, self.formatting_precision)
         scene_attr_complete = zip(scene_attr, scene_attr_score_rounded)
 
-        result = gps.get_gps_metadata(image_filepath)
+        # result = gps.get_gps_metadata(image_filepath)
         result['filename'] = filename
         result['semantic_categories'] = top_semantic_complete
         result['scene_attributes'] = scene_attr_complete
