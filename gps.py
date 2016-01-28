@@ -121,13 +121,13 @@ def get_gps_metadata(filepath, reverse_location=False):
         latitude = tags['GPS GPSLatitude'].values if 'GPS GPSLatitude' in tags else 0
         longtitude = tags['GPS GPSLongitude'].values if 'GPS GPSLongitude'  in tags else 0
         position =  gpsToString(latitude) + ", " + gpsToString(longtitude)
-        result['position'] = position 
+        result['position'] = position
 #
-        # if reverse_location and position:
-        #      try:
-        #          result['location'] = geolocator.reverse(position).address
-        #      except Exception:
-        #          result['location'] = default_for_missing_values
+        if reverse_location and position:
+             try:
+                 result['location'] = geolocator.reverse(position).address
+             except Exception:
+                 result['location'] = default_for_missing_values
     return result
 
 if __name__ == '__main__':
