@@ -4,6 +4,7 @@ from __future__ import division
 from datetime import datetime
 
 import exifread
+import exifread.utils
 from geopy.geocoders import Nominatim
 
 """
@@ -51,15 +52,14 @@ def exif_dms_to_decimal_deg(gps_exif):
     longitude = gps_exif.get(piexif.GPSIFD.GPSLongitude)
     if longitude:
         longitude = convert_to_deg(*longitude)
-        if gps_exif[piexif.GPSIFD.GPSLongitudeRef] == 'S':
+        if gps_exif[piexif.GPSIFD.GPSLongitudeRef] == 'W':
             longitude *= -1
     else:
         return None
 
     return (latitude, longitude)
+
 def gpsToString(coordinate):
- #   sec = rational_to_real(*map(int, str(coordinate[2]).split("/", 2)))
-#    print coordinate[0].__class__
     return str(convert_to_deg((coordinate[0].num, coordinate[0].den), (coordinate[1].num, coordinate[1].den), (coordinate[2].num, coordinate[2].den)))
 
 
@@ -80,32 +80,31 @@ def get_gps_metadata(filepath, reverse_location=False):
             result['date'] = default_for_missing_values
 
         shutter = tags['EXIF ExposureTime'].values[0] if 'EXIF ExposureTime' in tags else default_for_missing_values
-        result['ShutterSpeedValue'] = rational_to_real(shutter.num , shutter.den)
         scene_capture_type = tags['EXIF SceneCaptureType'] if 'EXIF SceneCaptureType' in tags else default_for_missing_values
-        result['SceneCaptureType'] = scene_capture_type
         subject_distance = tags['EXIF SubjectDistance'] if 'EXIF SubjectDistance' in tags else default_for_missing_values
-        result['SubjectDistance'] = subject_distance
         subject_distance_range = tags['EXIF SubjectDistanceRange'] if 'EXIF SubjectDistanceRange' in tags else default_for_missing_values
-        result['SubjectDistanceRange'] = subject_distance_range
         aperture = tags['EXIF ApertureValue'].values[0] if 'EXIF ApertureValue' in tags else default_for_missing_values
-        result['ApertureValue'] = rational_to_real(aperture.num, aperture.den)
         light_source = tags['EXIF LightSource'] if 'EXIF LightSource' in tags else default_for_missing_values   #unsure
-        result['LightSource'] = light_source
         image_orientation = tags['Image Orientation'] if 'Image Orientation' in tags else default_for_missing_values
-        result['Orientation'] = image_orientation
-
 # GPS
         altitude = tags['GPS GPSAltitude'].values[0] if 'GPS GPSAltitude' in tags else default_for_missing_values
-        result['altitude'] = rational_to_real(altitude.num, altitude.den) if type(altitude) != str else default_for_missing_values
-
         datum = tags['GPS GPSMapDatum'] if 'GPS GPSMapDatum' in tags else default_for_missing_values
-        result['datum'] = datum
-
         latitude = tags['GPS GPSLatitude'].values if 'GPS GPSLatitude' in tags else 0
         longtitude = tags['GPS GPSLongitude'].values if 'GPS GPSLongitude'  in tags else 0
-        position =  gpsToString(latitude) + ", " + gpsToString(longtitude)
+
+        position =  gpsToString(latitude) + ", " + gpsToString(longtitude) if type(longtitude)!=int and type(latitude)!=int else default_for_missing_values
+        result['ShutterSpeedValue'] = rational_to_real(shutter.num , shutter.den)
+        result['SceneCaptureType'] = scene_capture_type
+        result['SubjectDistance'] = subject_distance
+        result['SubjectDistanceRange'] = subject_distance_range
+        result['ApertureValue'] = rational_to_real(aperture.num, aperture.den)
+        result['LightSource'] = light_source
+        result['Orientation'] = image_orientation
+        result['datum'] = datum
+
+        result['altitude'] = rational_to_real(altitude.num, altitude.den) if type(altitude) != str else default_for_missing_values
         result['position'] = position
-#
+
         if reverse_location and position:
              try:
                  result['location'] = geolocator.reverse(position).address
