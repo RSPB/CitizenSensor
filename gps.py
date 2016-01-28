@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 from __future__ import division
-import exifread
-import struct
 from datetime import datetime
+
+import exifread
 from geopy.geocoders import Nominatim
 
 """
@@ -34,7 +34,7 @@ def convert_to_deg(degrees, minutes, seconds):
         seconds = rational_to_real(*seconds)
     return degrees + minutes / 60 + seconds / 3600
 
-def rational_to_real(numerator, denominator):
+def rational_to_real(numerator, denominator=0):
     if denominator == 0:
         return numerator
     return numerator / denominator
@@ -57,6 +57,11 @@ def exif_dms_to_decimal_deg(gps_exif):
         return None
 
     return (latitude, longitude)
+def gpsToString(coordinate):
+ #   sec = rational_to_real(*map(int, str(coordinate[2]).split("/", 2)))
+#    print coordinate[0].__class__
+    return convert_to_deg(tuple(coordinate[0]), tuple(coordinate[1]), tuple(coordinate[2]))
+
 
 
 def get_gps_metadata(filepath, reverse_location=False):
@@ -76,9 +81,9 @@ def get_gps_metadata(filepath, reverse_location=False):
     file = open(filepath, 'rb')
     tags = exifread.process_file(file)
 
-    for tag in tags.keys():
-        if tag not in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
-            print "Key: %s, value %s" % (tag, tags[tag])
+#    for tag in tags.keys():
+#        if tag not in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
+#            print "Key: %s, value %s" % (tag, tags[tag])
 
 #    print 'tags'#    result['date'] = tags['date]
 
@@ -91,42 +96,38 @@ def get_gps_metadata(filepath, reverse_location=False):
         except:
             result['date'] = default_for_missing_values
 
-        shutter = tags['EXIF ExposureTime']
-        result['ShutterSpeedValue'] = shutter if shutter else default_for_missing_values
-         
-        scene_capture_type = tags['EXIF SceneCaptureType']
-#        result['SceneCaptureType'] = scene_capture_type or default_for_missing_values
-#        subject_distance = exif.get(piexif.ExifIFD.SubjectDistance)
-#        result['SubjectDistance'] = subject_distance or default_for_missing_values
-#        subject_distance_range = exif.get(piexif.ExifIFD.SubjectDistanceRange)
-#        result['SubjectDistanceRange'] = subject_distance_range or default_for_missing_values
-#        aperture = exif.get(piexif.ExifIFD.ApertureValue)
-#        result['ApertureValue'] = rational_to_real(*aperture) if aperture else default_for_missing_values
-#        light_source = exif.get(piexif.ExifIFD.LightSource)
-#        result['LightSource'] = light_source or default_for_missing_values
+        shutter = tags['EXIF ExposureTime'].values[0] if 'EXIF ExposureTime' in tags else default_for_missing_values
+        result['ShutterSpeedValue'] = rational_to_real(shutter.num , shutter.den)
+        scene_capture_type = tags['EXIF SceneCaptureType'] if 'EXIF SceneCaptureType' in tags else default_for_missing_values
+        result['SceneCaptureType'] = scene_capture_type
+        subject_distance = tags['EXIF SubjectDistance'] if 'EXIF SubjectDistance' in tags else default_for_missing_values
+        result['SubjectDistance'] = subject_distance
+        subject_distance_range = tags['EXIF SubjectDistanceRange'] if 'EXIF SubjectDistanceRange' in tags else default_for_missing_values
+        result['SubjectDistanceRange'] = subject_distance_range
+        aperture = tags['EXIF ApertureValue'].values[0] if 'EXIF ApertureValue' in tags else default_for_missing_values
+        result['ApertureValue'] = rational_to_real(aperture.num, aperture.den)
+        light_source = tags['EXIF LightSource'] if 'EXIF LightSource' in tags else default_for_missing_values   #unsure
+        result['LightSource'] = light_source
+        image_orientation = tags['Image Orientation'] if 'Image Orientation' in tags else default_for_missing_values
+        result['Orientation'] = image_orientation
 
-#    image_0th = exif_dict.get('oth')
-#    if image_0th:
-#        image_orientation = image_0th.get(piexif.ImageIFD.Orientation)
-#        result['Orientation'] = image_orientation or default_for_missing_values
+# GPS
+        altitude = tags['GPS GPSAltitude'].values[0] if 'GPS GPSAltitude' in tags else default_for_missing_values
+        result['altitude'] = rational_to_real(altitude.num, altitude.den) if type(altitude) != str else default_for_missing_values
 
-#    gps = exif_dict.get('GPS')
-#    if gps:
-        altitude = tags['GPS GPSAltitude']
-        result['altitude'] = int(rational_to_real(*altitude)) if altitude else default_for_missing_values
+        datum = tags['GPS GPSMapDatum'] if 'GPS GPSMapDatum' in tags else default_for_missing_values
+        result['datum'] = datum
 
-        datum = tags['GPS GPSMapDatum']
-        result['datum'] = datum or default_for_missing_values
-
-        position = tags['GPS GPSLatitude'] + ", " + tags['GPS GPSLongtitude']
-        result['position'] = position or default_for_missing_values
-
-        if reverse_location and position:
-#            try:
-            result['location'] = geolocator.reverse(position).address
-#            except Exception:
-#                result['location'] = default_for_missing_values
-
+        # latitude = tags['GPS GPSLatitude'].values if 'GPS GPSLatitude' in tags else 0
+        # longtitude = tags['GPS GPSLongitude'].values if 'GPS GPSLongitude'  in tags else 0
+        # position =  gpsToString(latitude) + ", " + gpsToString(longtitude)
+        # result['position'] = position or default_for_missing_values
+#
+        # if reverse_location and position:
+        #      try:
+        #          result['location'] = geolocator.reverse(position).address
+        #      except Exception:
+        #          result['location'] = default_for_missing_values
     return result
 
 if __name__ == '__main__':
@@ -137,4 +138,4 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--image', help='Path to an image', type=configure.check_file_exist_argparse, required=True)
     args = parser.parse_args()
     metadata = get_gps_metadata(args.image, reverse_location=True)
-    print metadata
+    print (metadata)
