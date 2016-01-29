@@ -2,6 +2,7 @@
 
 import os
 import re
+import pandas as pd
 import scipy.io
 import numpy as np
 import caffe
@@ -38,9 +39,10 @@ class ImageClassifier(object):
         scene_attribute_model = scipy.io.loadmat(scene_attribute_model_filepath)
         self.W = scene_attribute_model['W_sceneAttribute']
         self.attributes = scene_attribute_model['attributes']
+        self.scene_labels = np.asarray([attribute[0][0] for attribute in self.attributes ])
 
         self.net = caffe.Classifier(model_filepath, pretrained_filepath, mean=mean, channel_swap = (2, 1, 0),raw_scale = 255)
-        self.labels = np.loadtxt(labels_filename, str, delimiter='\t')
+        self.semantic_labels = np.loadtxt(labels_filename, str, delimiter=' ')[:,0]
 
     def get_mean_image(self, path):
         proto_obj = caffe.io.caffe_pb2.BlobProto()
@@ -51,13 +53,12 @@ class ImageClassifier(object):
         return means.reshape(3,256,256).mean(1).mean(1)
 
     def identify_image(self, image_filepath):
-        filename = os.path.splitext(os.path.basename(image_filepath))[0]
         input_image = caffe.io.load_image(image_filepath)
         prediction = self.net.predict([input_image])
 
         # sort top k predictions from softmax output
         top_semantic = prediction[0].argsort()[-1:-self.no_semantic_categories-1:-1]
-        top_semantic_labels = [re.match('([^\s]+)', label).group(1) for label in self.labels[top_semantic]]
+        top_semantic_labels = self.semantic_labels[top_semantic]
         top_semantic_score = prediction[0][top_semantic]
         top_semantic_score_rounded = format_array_as_list(top_semantic_score, self.formatting_precision)
         top_semantic_complete = zip(top_semantic_labels, top_semantic_score_rounded)
@@ -65,7 +66,7 @@ class ImageClassifier(object):
         fc7 = self.net.blobs['fc7'].data
         res = self.W.dot(fc7.T)
 
-        total_scene_score = normalise(res.sum(axis=1))
+        total_scene_score = res.sum(axis=1)
         top_scene_attr = total_scene_score.argsort()[-1:-self.no_scene_attributes-1:-1]
         scene_attr_labels = self.attributes[top_scene_attr]
         scene_attr = [scene_attr_labels[idx][0][0] for idx in range(self.no_scene_attributes)]
@@ -74,11 +75,30 @@ class ImageClassifier(object):
         scene_attr_complete = zip(scene_attr, scene_attr_score_rounded)
 
         result = gps.get_gps_metadata(image_filepath)
-        result['filename'] = filename
+        result['filename'] = image_filepath
         result['semantic_categories'] = top_semantic_complete
         result['scene_attributes'] = scene_attr_complete
 
         return result
+
+    def get_prediction(self, image):
+        filename = os.path.basename(image.name)
+        input_image = caffe.io.load_image(image)
+        prediction = self.net.predict([input_image])
+        fc7 = self.net.blobs['fc7'].data
+        scene_attributes = self.W.dot(fc7.T)
+        total_scene_scores = scene_attributes.sum(axis=1)
+        semantic_scores = pd.Series(prediction[0], self.semantic_labels, dtype=pd.np.float16)
+        scene_scores = pd.Series(total_scene_scores,  self.scene_labels, dtype=pd.np.float16)
+        return Prediction(id=filename, semantic_scores=semantic_scores, scene_scores=scene_scores)
+
+
+class Prediction(object):
+
+    def __init__(self, id, semantic_scores, scene_scores):
+        self.id = id
+        self.semantic_scores = semantic_scores
+        self.scene_scores = scene_scores
 
 
 def normalise(array):
