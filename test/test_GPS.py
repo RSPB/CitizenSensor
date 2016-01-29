@@ -1,7 +1,6 @@
 from unittest import TestCase
 import gps
 
-
 class Test_GPS(TestCase):
 
     def test_convert_to_deg(self):
