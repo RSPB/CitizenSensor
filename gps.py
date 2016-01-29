@@ -60,8 +60,8 @@ def exif_dms_to_decimal_deg(gps_exif):
 
     return (latitude, longitude)
 
-def gpsToString(coordinate):
-    return str(convert_to_deg((coordinate[0].num, coordinate[0].den), (coordinate[1].num, coordinate[1].den), (coordinate[2].num, coordinate[2].den)))
+def gpsToFloat(coordinate):
+    return convert_to_deg((coordinate[0].num, coordinate[0].den), (coordinate[1].num, coordinate[1].den), (coordinate[2].num, coordinate[2].den))
 
 def get_gps_metadata(filepath, reverse_location=False):
     result = {}
@@ -70,14 +70,16 @@ def get_gps_metadata(filepath, reverse_location=False):
 
     file = open(filepath, 'rb')
     tags = exifread.process_file(file)
-
+#   for tag in tags.keys():
+#        if tag not in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
+#            print "Key: %s, value %s" % (tag, tags[tag])
     if tags:
-        date = tags['Image DateTime']
+        date = tags['Image DateTime'] if 'Image DateTime' in tags else default_for_missing_values
+        print "##%s##" % (date)
         try:
-            result['date'] = str(datetime.strptime(date, '%Y:%m:%d %H:%M:%S').date()) if date else default_for_missing_values
+            result['date'] = str(datetime.strptime(str(date), '%Y:%m:%d %H:%M:%S').date())
         except:
             result['date'] = default_for_missing_values
-
         shutter = tags['EXIF ExposureTime'].values[0] if 'EXIF ExposureTime' in tags else default_for_missing_values
         scene_capture_type = tags['EXIF SceneCaptureType'] if 'EXIF SceneCaptureType' in tags else default_for_missing_values
         subject_distance = tags['EXIF SubjectDistance'] if 'EXIF SubjectDistance' in tags else default_for_missing_values
@@ -91,17 +93,17 @@ def get_gps_metadata(filepath, reverse_location=False):
         latitude = tags['GPS GPSLatitude'].values if 'GPS GPSLatitude' in tags else 0
         longtitude = tags['GPS GPSLongitude'].values if 'GPS GPSLongitude'  in tags else 0
 
-        position =  gpsToString(latitude) + ", " + gpsToString(longtitude) if type(longtitude)!=int and type(latitude)!=int else default_for_missing_values
+        position =  (gpsToFloat(latitude), gpsToFloat(longtitude)) if type(longtitude)!=int and type(latitude)!=int else default_for_missing_values
         result['ShutterSpeedValue'] = rational_to_real(shutter.num , shutter.den)
-        result['SceneCaptureType'] = scene_capture_type
+        result['SceneCaptureType'] = str(scene_capture_type)
         result['SubjectDistance'] = subject_distance
-        result['SubjectDistanceRange'] = subject_distance_range
+        result['SubjectDistanceRange'] = str(subject_distance_range)
         result['ApertureValue'] = rational_to_real(aperture.num, aperture.den)
-        result['LightSource'] = light_source
-        result['Orientation'] = image_orientation
-        result['datum'] = datum
+        result['LightSource'] = str(light_source)
+        result['Orientation'] = str(image_orientation)
+        result['datum'] = str(datum)
 
-        result['altitude'] = rational_to_real(altitude.num, altitude.den) if type(altitude) != str else default_for_missing_values
+        result['altitude'] = int(rational_to_real(altitude.num, altitude.den)) if type(altitude) != str else default_for_missing_values
         result['position'] = position
 
         if reverse_location and position:
