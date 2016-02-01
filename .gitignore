@@ -63,3 +63,8 @@ target/
 
 # config
 config.ini
+
+# pickle
+.pickle
+
+output/
