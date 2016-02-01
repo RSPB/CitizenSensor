@@ -18,7 +18,7 @@ class Test_GPS(TestCase):
         self.assertEquals(res['date'], '2012-05-18')
         self.assertEquals(res['datum'], 'WGS-84')
         position = (round(res['position'][0], 6), round(res['position'][1], 6))
-        self.assertEquals(position, (40.031789, 8.757676))
+        self.assertEquals(position, (40.031789, -8.757676))
 
     def test_get_gps_metadata_with_location(self):
         res = gps.get_gps_metadata('test/images/27302080E.jpg', reverse_location=True)
