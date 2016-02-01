@@ -40,19 +40,16 @@ def rational_to_real(numerator, denominator=0):
         return numerator
     return numerator / denominator
 
-def exif_dms_to_decimal_deg(gps_exif):
-    latitude = gps_exif.get(piexif.GPSIFD.GPSLatitude)
+def applyGeoReferenceSign(latitude, latitudeRef, longitude, longitudeRef):
+
     if latitude:
-        latitude = convert_to_deg(*latitude)
-        if gps_exif[piexif.GPSIFD.GPSLatitudeRef] == 'S':
+        if latitudeRef == 'S':
             latitude *= -1
     else:
         return None
 
-    longitude = gps_exif.get(piexif.GPSIFD.GPSLongitude)
     if longitude:
-        longitude = convert_to_deg(*longitude)
-        if gps_exif[piexif.GPSIFD.GPSLongitudeRef] == 'W':
+        if longitudeRef == 'W':
             longitude *= -1
     else:
         return None
@@ -71,12 +68,12 @@ def get_gps_metadata(filepath, reverse_location=False):
 
     file = open(filepath, 'rb')
     tags = exifread.process_file(file)
-#   for tag in tags.keys():
-#        if tag not in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
-#            print "Key: %s, value %s" % (tag, tags[tag])
+    # for tag in tags.keys():
+    #     if tag not in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
+    #         print "Key: %s, value %s" % (tag, tags[tag])
     if tags:
         date = tags['Image DateTime'] if 'Image DateTime' in tags else default_for_missing_values
-        print "##%s##" % (date)
+#        print "##%s##" % (date)
         try:
             result['date'] = str(datetime.strptime(str(date), '%Y:%m:%d %H:%M:%S').date())
         except:
@@ -92,9 +89,11 @@ def get_gps_metadata(filepath, reverse_location=False):
         altitude = tags['GPS GPSAltitude'].values[0] if 'GPS GPSAltitude' in tags else default_for_missing_values
         datum = tags['GPS GPSMapDatum'] if 'GPS GPSMapDatum' in tags else default_for_missing_values
         latitude = tags['GPS GPSLatitude'].values if 'GPS GPSLatitude' in tags else 0
-        longtitude = tags['GPS GPSLongitude'].values if 'GPS GPSLongitude'  in tags else 0
+        latitudeRef = tags['GPS GPSLatitudeRef'].values[0] if 'GPS GPSLatitudeRef' in tags else default_for_missing_values
 
-        position =  (gpsToFloat(latitude), gpsToFloat(longtitude)) if type(longtitude)!=int and type(latitude)!=int else default_for_missing_values
+        longitude = tags['GPS GPSLongitude'].values if 'GPS GPSLongitude'  in tags else 0
+        longitudeRef = tags['GPS GPSLongitudeRef'].values[0] if 'GPS GPSLongitudeRef'  in tags else default_for_missing_values
+        position =  applyGeoReferenceSign(gpsToFloat(latitude), str(latitudeRef), gpsToFloat(longitude), str(longitudeRef)) if type(longitude)!=int and type(latitude)!=int else default_for_missing_values
         result['ShutterSpeedValue'] = rational_to_real(shutter.num , shutter.den)
         result['SceneCaptureType'] = str(scene_capture_type)
         result['SubjectDistance'] = subject_distance
@@ -106,8 +105,7 @@ def get_gps_metadata(filepath, reverse_location=False):
 
         result['altitude'] = int(rational_to_real(altitude.num, altitude.den)) if type(altitude) != str else default_for_missing_values
         result['position'] = position
-
-        if reverse_location and position:
+        if reverse_location and position != default_for_missing_values:
              try:
                  result['location'] = geolocator.reverse(position).address
              except Exception:
