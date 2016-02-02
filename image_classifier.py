@@ -81,7 +81,18 @@ class ImageClassifier(object):
 
         return result
 
+
     def get_prediction(self, image):
+        filename = os.path.basename(image.name)
+        input_image = caffe.io.load_image(image)
+        prediction = self.net.predict([input_image])
+        fc7 = self.net.blobs['fc7'].data
+        scene_attributes = self.W.dot(fc7.T)
+        total_scene_scores = scene_attributes.sum(axis=1)
+        return Prediction(id=filename, fc7=fc7, semantic_scores=prediction[0], scene_scores=total_scene_scores)
+
+
+    def get_prediction_series(self, image):
         filename = os.path.basename(image.name)
         input_image = caffe.io.load_image(image)
         prediction = self.net.predict([input_image])
@@ -90,13 +101,14 @@ class ImageClassifier(object):
         total_scene_scores = scene_attributes.sum(axis=1)
         semantic_scores = pd.Series(prediction[0], self.semantic_labels, dtype=pd.np.float16)
         scene_scores = pd.Series(total_scene_scores,  self.scene_labels, dtype=pd.np.float16)
-        return Prediction(id=filename, semantic_scores=semantic_scores, scene_scores=scene_scores)
+        return Prediction(id=filename, fc7=fc7, semantic_scores=semantic_scores, scene_scores=scene_scores)
 
 
 class Prediction(object):
 
-    def __init__(self, id, semantic_scores, scene_scores):
+    def __init__(self, id, fc7, semantic_scores, scene_scores):
         self.id = id
+        self.fc7 = fc7
         self.semantic_scores = semantic_scores
         self.scene_scores = scene_scores
 
