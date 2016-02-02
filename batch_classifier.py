@@ -4,6 +4,7 @@ import pandas as pd
 import time
 import configure
 from image_classifier import ImageClassifier
+from writer import Writer
 
 
 if __name__ == '__main__':
@@ -17,25 +18,13 @@ if __name__ == '__main__':
     start = time.time()
     config = configure.read_config()
     classifier = ImageClassifier(config)
-
-    output_dir = 'output'
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    semantic_filename = os.path.join(output_dir, args.output + '.semantic')
-    scene_filename = os.path.join(output_dir, args.output + '.scene')
-
-    df_semantic = pd.DataFrame()
-    df_scene = pd.DataFrame()
+    writer = Writer(config, args.output)
+    writer.write_headers()
 
     for filename in glob.glob(os.path.join(args.directory, '*.jpg')):
         print('Processing: {}'.format(filename))
         with open(filename, 'rb') as f:
             result = classifier.get_prediction(f)
-        df_semantic = df_semantic.append(result.semantic_scores, ignore_index=True)
-        df_scene = df_scene.append(result.scene_scores, ignore_index=True)
-
-    df_semantic.to_csv(semantic_filename + '_complete.csv', index=False)
-    df_scene.to_csv(scene_filename + '_complete.csv', index=False)
+        writer.write(result)
 
     print('Total time: {}'.format(time.time() - start))
