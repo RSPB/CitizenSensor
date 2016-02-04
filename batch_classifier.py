@@ -1,6 +1,5 @@
 import os
 import glob
-import json
 import pandas as pd
 import time
 import configure
@@ -21,9 +20,11 @@ if __name__ == '__main__':
     classifier = ImageClassifier(config)
     writer = Writer(config, args.output)
     writer.write_headers()
+
     for filename in glob.glob(os.path.join(args.directory, '*.jpg')):
         print('Processing: {}'.format(filename))
         with open(filename, 'rb') as f:
             result = classifier.get_prediction(f)
         writer.write(result)
+
     print('Total time: {}'.format(time.time() - start))

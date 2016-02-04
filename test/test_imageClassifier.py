@@ -40,6 +40,7 @@ class TestImageClassifier(TestCase):
         config = configure.read_config()
         config['Algorithm']['semantic_categories_no'] = 10
         config['Algorithm']['scene_attributes_no'] = 5
+        config['Algorithm']['formatting_precision'] = 3
         config['GPS']['reverse_location'] = False
         classifier = ImageClassifier(config)
         res = classifier.identify_image('test/images/27302080E.jpg')

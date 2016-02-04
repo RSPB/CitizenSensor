@@ -23,6 +23,6 @@ class Test_GPS(TestCase):
     def test_get_gps_metadata_with_location(self):
         res = gps.get_gps_metadata('test/images/27302080E.jpg', reverse_location=True)
         self.assertEquals(len(res), 12)
-        self.assertEquals(res['location'], u'Vecchia Strada Comunale Zerfaliu-Paulilatino, Paulle/Paulilatino, OR, SAR, 09070, Italia',
+        self.assertEquals(res['location'], u'Rua Comercial, Sei\xe7a, Figueira da Foz, Coimbra, Baixo Mondego, Centro, Portugal',
                           "Translation of coordinates to location's name failed. Test is expected to fail if there is "
                            "no internet connection")
