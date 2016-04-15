@@ -4,9 +4,9 @@ import numpy as np
 import pandas as pd
 import scipy.io
 
-image_filepath = 'test/images/3221567431_a58ffbd628.jpg'
+image_filepath = 'test/images/27302080E.jpg'
 
-config = configure.read_config()
+config = configure.read_config('output/config.ini')
 
 class Prediction(object):
 
@@ -42,7 +42,8 @@ scene_attribute_model_filepath = config['Model_filepaths']['scene_attribute_mode
 meanim_filepath = config['Model_filepaths']['meanimage_model']
 labels_filename = config['Model_filepaths']['labels_model']
 
-mean = get_mean_image(meanim_filepath)
+# mean = get_mean_image(meanim_filepath)
+mean = np.array([105.908874512, 114.063842773, 116.282836914])
 scene_attribute_model = scipy.io.loadmat(scene_attribute_model_filepath)
 W = scene_attribute_model['W_sceneAttribute']
 attributes = scene_attribute_model['attributes']

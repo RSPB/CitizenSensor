@@ -1,5 +1,5 @@
 import os
-import glob
+import glob2
 import argparse
 import time
 import configure
@@ -18,6 +18,9 @@ if __name__ == '__main__':
         'be unique and match exactly file name in the dataset. Use in conjunction with <extra> option', type=int, default=None)
     parser.add_argument('-v', '--values', nargs='+', help='Indices of columns (starting from zero) to be joined. '
         'Use in conjunction with <extra> option', type=int, default=None)
+    parser.add_argument('-r', '--rotate', help='CSV rolling', type=int, default=None)
+    parser.add_argument('--remove_completed', help='Remove file after processing', action='store_true')
+    parser.add_argument('--write_header', help='Write header to the output files', action='store_true')
     args = parser.parse_args()
 
     if args.output:
@@ -32,13 +35,26 @@ if __name__ == '__main__':
     start = time.time()
     config = configure.read_config(args.config)
     classifier = ImageClassifier(config)
-    writer = Writer(config, output_filename, filename_with_extra_fields=args.extra, key_idx=args.key, val_idxs=args.values)
-    writer.write_headers()
+    writer = Writer(config, output_filename, write_header=args.write_header, rotate=args.rotate,
+                    filename_with_extra_fields=args.extra, key_idx=args.key, val_idxs=args.values)
 
-    for filename in glob.glob(os.path.join(args.directory, '*.jpg')):
-        print('Processing: {}'.format(filename))
-        with open(filename, 'rb') as f:
-            result = classifier.get_prediction(f)
-        writer.write(result)
+    failed_f = open('failed.txt', 'w', buffering=0)
+    success_f = open('success.txt', 'w', buffering=0)
+
+    for filename in glob2.iglob(os.path.join(args.directory, '**/*.jpg')):
+        try:
+            print('Processing: {}'.format(filename))
+            with open(filename, 'rb') as f:
+                result = classifier.get_prediction(f)
+            writer.write(result)
+            success_f.write(filename + '\n')
+            if args.remove_completed:
+                os.remove(filename)
+        except Exception as ex:
+            failed_f.write(filename + ';' + str(ex) + '\n')
+            print('FAILED: ' + filename)
+
 
     print('Total time: {}'.format(time.time() - start))
+    failed_f.close()
+    success_f.close()
