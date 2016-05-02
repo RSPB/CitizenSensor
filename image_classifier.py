@@ -1,12 +1,20 @@
 #!/usr/bin/env python
 
 import os
-import re
+import sys
 import pandas as pd
 import scipy.io
 import numpy as np
-import caffe
 import gps
+
+try:
+    caffe_root = os.environ['CAFFE_HOME']
+    sys.path.insert(0, os.path.join(caffe_root,'python'))
+except KeyError:
+    print('CAFFE_HOME environment variable not defined. Trying to import default...')
+
+import caffe
+
 
 class ImageClassifier(object):
     """
