@@ -84,8 +84,8 @@ class ImageClassifier(object):
 
         result = gps.get_gps_metadata(image_filepath)
         result['filename'] = image_filepath
-        result['semantic_categories'] = top_semantic_complete
-        result['scene_attributes'] = scene_attr_complete
+        result['semantic_categories'] = list(top_semantic_complete)
+        result['scene_attributes'] = list(scene_attr_complete)
 
         return result
 
