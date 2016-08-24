@@ -38,8 +38,8 @@ if __name__ == '__main__':
     writer = Writer(config, output_filename, write_header=args.write_header, rotate=args.rotate,
                     filename_with_extra_fields=args.extra, key_idx=args.key, val_idxs=args.values)
 
-    failed_f = open('failed.txt', 'w', buffering=0)
-    success_f = open('success.txt', 'w', buffering=0)
+    failed_f = open('failed.txt', 'w')
+    success_f = open('success.txt', 'w')
 
     for filename in glob2.iglob(os.path.join(args.directory, '**/*.jpg')):
         try:

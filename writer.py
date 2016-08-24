@@ -80,7 +80,7 @@ class Writer(object):
                 self.write_headers()
 
     def write_single(self, filename, prediction_id, array, precision):
-        with open(filename, 'ab') as f:
+        with open(filename, 'a') as f:
             f.write(prediction_id + ',')
             if self.val_to_join:
                 # prediction_id = os.path.splitext(prediction_id)[0]
