@@ -1,12 +1,20 @@
 #!/usr/bin/env python
 
 import os
-import re
+import sys
 import pandas as pd
 import scipy.io
 import numpy as np
-import caffe
 import gps
+
+try:
+    caffe_root = os.environ['CAFFE_HOME']
+    sys.path.insert(0, os.path.join(caffe_root,'python'))
+except KeyError:
+    print('CAFFE_HOME environment variable not defined. Trying to import default...')
+
+import caffe
+
 
 class ImageClassifier(object):
     """
@@ -76,8 +84,8 @@ class ImageClassifier(object):
 
         result = gps.get_gps_metadata(image_filepath)
         result['filename'] = image_filepath
-        result['semantic_categories'] = top_semantic_complete
-        result['scene_attributes'] = scene_attr_complete
+        result['semantic_categories'] = list(top_semantic_complete)
+        result['scene_attributes'] = list(scene_attr_complete)
 
         return result
 

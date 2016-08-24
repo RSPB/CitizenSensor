@@ -68,3 +68,5 @@ config.ini
 .pickle
 
 output/
+failed.txt
+success.txt
