@@ -38,7 +38,6 @@ def read_config(config_path='config.ini', configspec_path='configspec.ini'):
 
 
 if __name__ == '__main__':
-    import argparse
     parser = argparse.ArgumentParser(description='Configuration loader.', prog='Citizen Sensor')
     parser.add_argument('-c', '--config', help='Path to ini config file', default='config.ini', type=check_file_exist_argparse)
     parser.add_argument('-s', '--spec', help='Path to ini config spec file', default='configspec.ini', type=check_file_exist_argparse)
