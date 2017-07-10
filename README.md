@@ -4,7 +4,7 @@ We are using existing Convolutional Neural Networks to produce tags (so-called s
 
 ## Web server
 
-The web server serves a web site that allows user to submit an image and get in return set top-N scene categories and attribues associated with a picture. Live web site, subject to weather conditions, should be available at http://rspb.cloudapp.net 
+The web server serves a web site that allows user to submit an image and get in return set top-N scene categories and attribues associated with a picture. Live web site can be made available - do shout. 
 
 ## Batch processing
 
